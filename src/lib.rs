@@ -31,7 +31,11 @@ mod alternating_no_remainder;
 pub use alternating::Alternating;
 pub use alternating_no_remainder::AlternatingNoRemainder;
 
-/// `use` this trait to add the [`alternate_with`][AlternatingExt::alternate_with] method to iterators.
+/// Extension trait that provides methods for creating alternating iterators.
+///
+/// This trait can be `use`d to add the [`alternate_with`](AlternatingExt::alternate_with)
+/// and [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder) methods
+/// to any iterator, allowing iteration over two iterators in an alternating fashion.
 pub trait AlternatingExt: Iterator {
     /// Takes two iterators and creates a new iterator over both in in an alternating fashion.
     ///
