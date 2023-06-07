@@ -1,64 +1,45 @@
-enum Next {
-    I,
-    J,
-    II,
-    JJ,
-}
+//! This crate aims to provide a way to alternate between the items of two iterators.
+//!
+//! For the simplest usage, bring [`AlternatingExt`] into scope and use the [`alternate_with`](AlternatingExt::alternate_with) method:
+//! ```
+//! use alternating_iter::AlternatingExt;
+//!
+//! let a = [1, 2, 3];
+//! let b = [4, 5];
+//!
+//! let mut alternating = a.iter().alternate_with(b.iter());
+//!
+//! assert_eq!(alternating.next(), Some(&1));
+//! assert_eq!(alternating.next(), Some(&4));
+//! assert_eq!(alternating.next(), Some(&2));
+//! assert_eq!(alternating.next(), Some(&5));
+//! assert_eq!(alternating.next(), Some(&3));
+//! assert_eq!(alternating.next(), None);
+//! ```
+//!
+//! By default, the iterator acquired from `alternate_with` method will
+//! return the items from both iterators until both are exhausted.
+//!
+//! However, if you want to stop after either is exhuasted,
+//! use [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder).
+//! The iterator acquired from this method will stop once it
+//! has to return more than 1 item from a single iterator consecutively.
 
-/// See [`alternate_with`](AlternatingExt::alternate_with).
-pub struct Alternating<I, J> {
-    i: I,
-    j: J,
-    next: Next,
-}
+mod alternating;
+mod alternating_no_remainder;
 
-impl<I, J> Iterator for Alternating<I, J>
-where
-    I: Iterator,
-    J: Iterator<Item = I::Item>,
-{
-    type Item = I::Item;
+pub use alternating::Alternating;
+pub use alternating_no_remainder::AlternatingNoRemainder;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next {
-            Next::I => {
-                if let Some(i) = self.i.next() {
-                    self.next = Next::J;
-                    Some(i)
-                } else {
-                    self.next = Next::JJ;
-                    self.j.next()
-                }
-            }
-            Next::J => {
-                if let Some(j) = self.j.next() {
-                    self.next = Next::I;
-                    Some(j)
-                } else {
-                    self.next = Next::II;
-                    self.i.next()
-                }
-            }
-            Next::II => self.i.next(),
-            Next::JJ => self.j.next(),
-        }
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let (i_lower, i_upper) = self.i.size_hint();
-        let (j_lower, j_upper) = self.j.size_hint();
-        (
-            i_lower + j_lower,
-            i_upper.and_then(|i| j_upper.map(|j| i + j)),
-        )
-    }
-}
-
+/// `use` this trait to add the [`alternate_with`][AlternatingExt::alternate_with] method to iterators.
 pub trait AlternatingExt: Iterator {
-    /// Alternate between the items of two iterators. Once one of them run out, return only the other.
+    /// Takes two iterators and creates a new iterator over both in in an alternating fashion.
     ///
-    /// Both iterators must have the same [`Item`](Iterator::Item) type.
+    /// The left iterator will be the first in the sequence.
+    /// Once one of the iterators is exhausted,
+    /// the remaining items from the other iterator will be returned.
     ///
+    /// Note that both iterators must have the same [`Item`](Iterator::Item) type.
     ///
     /// # Examples
     ///
@@ -70,23 +51,80 @@ pub trait AlternatingExt: Iterator {
     ///
     /// let mut iter = a.iter().alternate_with(b.iter());
     ///
-    /// assert_eq!(iter.next(), Some(1));
-    /// assert_eq!(iter.next(), Some(3));
-    /// assert_eq!(iter.next(), Some(2));
-    /// assert_eq!(iter.next(), Some(4));
-    /// assert_eq!(iter.next(), Some(5));
+    /// assert_eq!(iter.next(), Some(&1)); // a first
+    /// assert_eq!(iter.next(), Some(&3)); // b
+    /// assert_eq!(iter.next(), Some(&2)); // a
+    /// assert_eq!(iter.next(), Some(&4)); // b
+    /// assert_eq!(iter.next(), Some(&5)); // also b
     /// assert_eq!(iter.next(), None);
     /// ```
-    fn alternate_with<J>(self, j: J) -> Alternating<Self, J>
+    fn alternate_with<I>(self, other: I) -> Alternating<Self, I::IntoIter>
     where
         Self: Sized,
-        J: Iterator<Item = Self::Item>,
+        I: IntoIterator<Item = Self::Item>,
     {
-        Alternating {
-            i: self,
-            j,
-            next: Next::I,
-        }
+        Alternating::new(self, other)
+    }
+
+    /// Takes two iterators and creates a new iterator over both in an alternating fashion,
+    /// with no remainder from the exhausted iterator.
+    ///
+    /// Different from [`alternate_with`][AlternatingExt::alternate_with] in that
+    /// when one of the iterators is exhausted, only a single item from the other iterator
+    /// is returned.
+    ///
+    /// Note that both iterators must have the same [`Item`](Iterator::Item) type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alternating_iter::AlternatingExt;
+    ///
+    /// let a = [1, 2];
+    /// let b = [3, 4, 5];
+    ///
+    /// let mut iter = a.iter().alternate_with_no_remainder(b.iter());
+    ///
+    /// assert_eq!(iter.next(), Some(&1)); // a first
+    /// assert_eq!(iter.next(), Some(&3)); // b
+    /// assert_eq!(iter.next(), Some(&2)); // a
+    /// assert_eq!(iter.next(), Some(&4)); // b
+    /// assert_eq!(iter.next(), None);     // remaining items from b are not returned
+    /// ```
+    ///
+    /// Importantly, the order of the iterators matter:
+    /// ```
+    /// # use std::iter;
+    /// # use alternating_iter::AlternatingExt;
+    ///
+    /// let small = [1, 2];
+    /// let big = [3, 4, 5];
+    ///
+    /// assert_eq!(small.iter().alternate_with_no_remainder(big.iter()).count(), 4);
+    /// assert_eq!(big.iter().alternate_with_no_remainder(small.iter()).count(), 5);
+    /// ```
+    ///
+    /// This behavior can be depicted as follow:
+    ///
+    /// Here is when `small` is on the left,
+    /// ```txt
+    /// small: 1 2 None
+    ///        |/|/
+    ///   big: 3 4
+    /// ```
+    /// And here is when `big` is on the left:`
+    /// ```txt
+    /// small: 3 4 5
+    ///        |/|/|
+    ///   big: 1 2 None
+    /// ```
+    fn alternate_with_no_remainder<I>(self, other: I) -> AlternatingNoRemainder<Self, I::IntoIter>
+    where
+        Self: Sized,
+        I: IntoIterator<Item = Self::Item>,
+    {
+        AlternatingNoRemainder::new(self, other)
     }
 }
+
 impl<I> AlternatingExt for I where I: Iterator {}
