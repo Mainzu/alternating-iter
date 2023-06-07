@@ -1,3 +1,8 @@
+use core::iter;
+
+#[allow(unused_imports)]
+use crate::AlternatingExt;
+
 /// Struct for alternating between the items of two iterators.
 ///
 /// This struct is created by the [`AlternatingExt::alternate_with`] method, see its documentation for more.
@@ -78,11 +83,26 @@ where
     }
 }
 
+impl<I, J> iter::FusedIterator for Alternating<I, J>
+where
+    I: Iterator,
+    J: Iterator<Item = I::Item>,
+{
+}
+
+impl<I, J> iter::ExactSizeIterator for Alternating<I, J>
+where
+    I: iter::ExactSizeIterator,
+    J: iter::ExactSizeIterator<Item = I::Item>,
+{
+    fn len(&self) -> usize {
+        self.i.len() + self.j.len()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::iter;
-
-    use crate::AlternatingExt;
+    use super::*;
 
     #[test]
     fn equal_lengths() {

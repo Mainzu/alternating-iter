@@ -3,8 +3,11 @@ name = "alternating-iter"
 version = "0.1.0"
 edition = "2021"
 license = "MIT-0"
-description = "Provide an iterator adaptor which alternate between 2 iterators."
+description = "Provide an iterator adaptor which alternate between two iterators."
 readme = "README.md"
+repository = "https://github.com/Mainzu/alternating-iter"
+categories = ["rust-patterns"]
+keywords = ["iterator", "adaptor", "altnerate", "interleave"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

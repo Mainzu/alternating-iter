@@ -1,4 +1,7 @@
-use std::cmp::Ordering;
+use core::iter;
+
+#[allow(unused_imports)]
+use crate::AlternatingExt;
 
 /// Struct for alternating between the items of two iterators until one is exhausted.
 ///
@@ -25,6 +28,23 @@ where
             last_i: false,
         }
     }
+}
+
+fn min_and_1(i: usize, j: usize, last_i: bool) -> (usize, bool) {
+    use core::cmp::Ordering;
+
+    match i.cmp(&j) {
+        Ordering::Less => (i, last_i),
+        Ordering::Equal => (i, false),
+        Ordering::Greater => (j, !last_i),
+    }
+}
+fn saturating((min, add_one): (usize, bool)) -> usize {
+    min.saturating_mul(2).saturating_add(add_one as usize)
+}
+fn checked((min, add_one): (usize, bool)) -> Option<usize> {
+    min.checked_mul(2)
+        .and_then(|min| min.checked_add(add_one as usize))
 }
 
 impl<I, J> Iterator for AlternatingNoRemainder<I, J>
@@ -60,21 +80,6 @@ where
         // We can squeeze 1 more if the other iterator is longer and
         // the last element was from the same iterator.
 
-        fn min_and_1(i: usize, j: usize, last_i: bool) -> (usize, bool) {
-            match i.cmp(&j) {
-                Ordering::Less => (i, last_i),
-                Ordering::Equal => (i, false),
-                Ordering::Greater => (j, !last_i),
-            }
-        }
-        fn saturating((min, add_one): (usize, bool)) -> usize {
-            min.saturating_mul(2).saturating_add(add_one as usize)
-        }
-        fn checked((min, add_one): (usize, bool)) -> Option<usize> {
-            min.checked_mul(2)
-                .and_then(|min| min.checked_add(add_one as usize))
-        }
-
         let lower = saturating(min_and_1(i_lower, j_lower, self.last_i));
         let upper = match (i_upper, j_upper) {
             (Some(i_upper), Some(j_upper)) => checked(min_and_1(i_upper, j_upper, self.last_i)),
@@ -89,11 +94,26 @@ where
     }
 }
 
+impl<I, J> iter::FusedIterator for AlternatingNoRemainder<I, J>
+where
+    I: Iterator,
+    J: Iterator<Item = I::Item>,
+{
+}
+
+impl<I, J> iter::ExactSizeIterator for AlternatingNoRemainder<I, J>
+where
+    I: iter::ExactSizeIterator,
+    J: iter::ExactSizeIterator<Item = I::Item>,
+{
+    fn len(&self) -> usize {
+        saturating(min_and_1(self.i.len(), self.j.len(), self.last_i))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::iter;
-
-    use crate::AlternatingExt;
+    use super::*;
 
     #[test]
     fn same_lengths() {
