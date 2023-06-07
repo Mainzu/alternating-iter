@@ -2,9 +2,7 @@
 
 ![Latest Version](https://img.shields.io/crates/v/alternating-iter)
 
-This crate aims to provides a convenient way to alternate between
-the items of two iterators. It allows you to iterate over two iterators
-in an alternating fashion, combining their elements into a single sequence.
+This crate aims to provides a convenient way to alternate between the items of two iterators. It allows you to iterate over two iterators in an alternating fashion, combining their elements into a single sequence.
 
 For the simplest usage of this crate, bring the [`AlternatingExt`](crate::AlternatingExt) trait into scope
 
@@ -12,8 +10,7 @@ For the simplest usage of this crate, bring the [`AlternatingExt`](crate::Altern
 use alternating_iter::AlternatingExt;
 ```
 
-and use the [`alternate_with`](AlternatingExt::alternate_with) method
-to create new alternating iterators.
+and use the [`alternate_with`](AlternatingExt::alternate_with) method to create new alternating iterators.
 
 ```rust
 # use alternating_iter::AlternatingExt;
@@ -31,15 +28,11 @@ assert_eq!(alternating.next(), Some(&3));
 assert_eq!(alternating.next(), None);
 ```
 
-By default the `alternate_with` method creates an iterator that returns an element from `a` first,
-followed by element from `b`, and so on until both are exhausted.
+By default the `alternate_with` method creates an iterator that returns an element from `a` first, followed by element from `b`, and so on until both are exhausted.
 
 ### Stopping after Exhaustion
 
-If, however, you want the iteration to stop once either of the iterators is exhausted,
-you can use the [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder) method,
-also provided by the `AlternatingExt` trait. This method returns an iterator that
-stops as soon as it needs to return more than one item consecutively from a single iterator.
+If, however, you want the iteration to stop once either of the iterators is exhausted, you can use the [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder) method, also provided by the `AlternatingExt` trait. This method returns an iterator that stops as soon as it needs to return more than one item consecutively from a single iterator.
 
 ```rust
 use alternating_iter::AlternatingExt;
@@ -56,5 +49,4 @@ assert_eq!(iter.next(), Some(&4)); // `b`
 assert_eq!(iter.next(), None);     // remaining items from `b` are not returned
 ```
 
-The iteration stops after the fourth element because returning the fifth element from `b`
-would break the alternating pattern.
+The iteration stops after the fourth element because returning the fifth element from `b` would break the alternating pattern.
