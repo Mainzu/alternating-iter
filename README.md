@@ -1,14 +1,12 @@
 # Alternating Iterators
 
-![GitHub](https://img.shields.io/github/license/Mainzu/alternating-iter)
-![Crates.io](https://img.shields.io/crates/v/alternating-iter)
-![Crates.io](https://img.shields.io/crates/d/alternating-iter)
+![Latest Version](https://img.shields.io/crates/v/alternating-iter)
 
 This crate aims to provides a convenient way to alternate between
 the items of two iterators. It allows you to iterate over two iterators
 in an alternating fashion, combining their elements into a single sequence.
 
-For the simplest usage of this crate, bring the [`AlternatingExt`] trait into scope
+For the simplest usage of this crate, bring the [`AlternatingExt`](AlternatingExt) trait into scope
 
 ```rust, no_run
 use alternating_iter::AlternatingExt;
