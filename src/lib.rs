@@ -39,9 +39,9 @@ pub trait AlternatingExt: Iterator {
     /// assert_eq!(iter.next(), Some(&3)); // `b`
     /// assert_eq!(iter.next(), Some(&2)); // `a`
     /// assert_eq!(iter.next(), Some(&4)); // `b`
-    /// assert_eq!(iter.next(), None); // `a` exhausted
+    /// assert_eq!(iter.next(), None);     // `a` exhausted
     /// assert_eq!(iter.next(), Some(&5)); // `b`
-    /// assert_eq!(iter.next(), None); // `b` exhausted
+    /// assert_eq!(iter.next(), None);     // `b` exhausted
     /// ```
     fn alternate_with<I>(self, other: I) -> Alternating<Self, I::IntoIter>
     where

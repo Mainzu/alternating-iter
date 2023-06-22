@@ -67,9 +67,9 @@ assert_eq!(iter.next(), Some(&1)); // `a` first
 assert_eq!(iter.next(), Some(&3)); // `b`
 assert_eq!(iter.next(), Some(&2)); // `a`
 assert_eq!(iter.next(), Some(&4)); // `b`
-assert_eq!(iter.next(), None); // `a` exhausted
+assert_eq!(iter.next(), None);     // `a` exhausted
 assert_eq!(iter.next(), Some(&5)); // `b`
-assert_eq!(iter.next(), None); // `b` exhausted
+assert_eq!(iter.next(), None);     // `b` exhausted
 ```
 
 The iterator will simply keep alternating blindly, so `Some` can appear between `None` if one of the input iterator is larger than the other.
