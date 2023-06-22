@@ -5,22 +5,23 @@
 #![deny(rustdoc::missing_crate_level_docs)]
 #![warn(rustdoc::invalid_codeblock_attributes)]
 mod alternating;
+mod alternating_all;
 mod alternating_no_remainder;
+mod utils;
 
 pub use alternating::Alternating;
+pub use alternating_all::AlternatingAll;
 pub use alternating_no_remainder::AlternatingNoRemainder;
 
 /// Extension trait that provides methods for creating alternating iterators.
 ///
-/// This trait can be `use`d to add the [`alternate_with`](AlternatingExt::alternate_with)
-/// and [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder) methods
+/// This trait can be `use`d to add the `alternate_with*` family of methods
 /// to any iterator, allowing iteration over two iterators in an alternating fashion.
 pub trait AlternatingExt: Iterator {
     /// Takes two iterators and creates a new iterator over both in in an alternating fashion.
     ///
     /// The left iterator will be the first in the sequence.
-    /// Once one of the iterators is exhausted,
-    /// the remaining items from the other iterator will be returned.
+    /// Keep alternating even if one of the iterators is exhausted.
     ///
     /// Note that both iterators must have the same [`Item`](Iterator::Item) type.
     ///
@@ -38,8 +39,9 @@ pub trait AlternatingExt: Iterator {
     /// assert_eq!(iter.next(), Some(&3)); // `b`
     /// assert_eq!(iter.next(), Some(&2)); // `a`
     /// assert_eq!(iter.next(), Some(&4)); // `b`
-    /// assert_eq!(iter.next(), Some(&5)); // also `b`
-    /// assert_eq!(iter.next(), None);
+    /// assert_eq!(iter.next(), None); // `a` exhausted
+    /// assert_eq!(iter.next(), Some(&5)); // `b`
+    /// assert_eq!(iter.next(), None); // `b` exhausted
     /// ```
     fn alternate_with<I>(self, other: I) -> Alternating<Self, I::IntoIter>
     where
@@ -47,6 +49,39 @@ pub trait AlternatingExt: Iterator {
         I: IntoIterator<Item = Self::Item>,
     {
         Alternating::new(self, other)
+    }
+    /// Takes two iterators and creates a new iterator over both in in an alternating fashion,
+    /// while taking care of the size difference.
+    ///
+    /// The left iterator will be the first in the sequence.
+    /// Once one of the iterators is exhausted,
+    /// the remaining items from the other iterator will be returned without interruption.
+    ///
+    /// Note that both iterators must have the same [`Item`](Iterator::Item) type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use alternating_iter::AlternatingExt;
+    ///
+    /// let a = [1, 2];
+    /// let b = [3, 4, 5];
+    ///
+    /// let mut iter = a.iter().alternate_with_all(b.iter());
+    ///
+    /// assert_eq!(iter.next(), Some(&1)); // `a` first
+    /// assert_eq!(iter.next(), Some(&3)); // `b`
+    /// assert_eq!(iter.next(), Some(&2)); // `a`
+    /// assert_eq!(iter.next(), Some(&4)); // `b`
+    /// assert_eq!(iter.next(), Some(&5)); // also `b`
+    /// assert_eq!(iter.next(), None);
+    /// ```
+    fn alternate_with_all<I>(self, other: I) -> AlternatingAll<Self, I::IntoIter>
+    where
+        Self: Sized,
+        I: IntoIterator<Item = Self::Item>,
+    {
+        AlternatingAll::new(self, other)
     }
 
     /// Takes two iterators and creates a new iterator over both in an alternating fashion,
@@ -75,7 +110,7 @@ pub trait AlternatingExt: Iterator {
     /// assert_eq!(iter.next(), None);     // remaining items from `b` are not returned
     /// ```
     ///
-    /// Importantly, the order of the iterators matter:
+    /// Importantly, the order of the iterators matter to the overall length:
     /// ```
     /// # use std::iter;
     /// # use alternating_iter::AlternatingExt;
@@ -101,16 +136,6 @@ pub trait AlternatingExt: Iterator {
     ///        |/|/|
     ///   big: 1 2 None
     /// ```
-    ///
-    /// # Fused
-    /// While the resulting iterator will be Fused if either of the input iterators is Fused,
-    /// it implements [`FusedIterator`](std::iter::FusedIterator)
-    /// only if BOTH iterators are Fused due to Rust's limitation.
-    ///
-    /// If you need the iterator to be Fused,
-    /// call [`AlternatingNoRemainder::fused_left()`](alternating_no_remainder::AlternatingNoRemainder::fused_left)
-    /// or [`AlternatingNoRemainder::fused_right()`](alternating_no_remainder::AlternatingNoRemainder::fused_right)
-    /// instead.
     fn alternate_with_no_remainder<I>(self, other: I) -> AlternatingNoRemainder<Self, I::IntoIter>
     where
         Self: Sized,

@@ -4,31 +4,31 @@
 
 This crate aims to provides a convenient way to alternate between the items of two iterators. It allows you to iterate over two iterators in an alternating fashion, combining their elements into a single sequence.
 
-For the simplest usage of this crate, bring the [`AlternatingExt`](crate::AlternatingExt) trait into scope
+For the easiest usage of this crate, bring the [`AlternatingExt`](crate::AlternatingExt) trait into scope
 
 ```rust, no_run
 use alternating_iter::AlternatingExt;
 ```
 
-and use the [`alternate_with`](AlternatingExt::alternate_with) method to create new alternating iterators.
+and use the [`alternate_with_all`](AlternatingExt::alternate_with_all) method to create new alternating iterators.
 
 ```rust
-# use alternating_iter::AlternatingExt;
+use alternating_iter::AlternatingExt;
 
-let a = [1, 2, 3];
-let b = [4, 5];
+let a = [1, 2];
+let b = [3, 4, 5];
 
-let mut alternating = a.iter().alternate_with(b.iter());
+let mut iter = a.iter().alternate_with_all(b.iter());
 
-assert_eq!(alternating.next(), Some(&1));
-assert_eq!(alternating.next(), Some(&4));
-assert_eq!(alternating.next(), Some(&2));
-assert_eq!(alternating.next(), Some(&5));
-assert_eq!(alternating.next(), Some(&3));
-assert_eq!(alternating.next(), None);
+assert_eq!(iter.next(), Some(&1)); // `a` first
+assert_eq!(iter.next(), Some(&3)); // `b`
+assert_eq!(iter.next(), Some(&2)); // `a`
+assert_eq!(iter.next(), Some(&4)); // `b`
+assert_eq!(iter.next(), Some(&5)); // also `b`
+assert_eq!(iter.next(), None);
 ```
 
-By default the `alternate_with` method creates an iterator that returns an element from `a` first, followed by element from `b`, and so on until both are exhausted.
+By default the `alternate_with_all` method creates an iterator that returns an element from `a` first, followed by element from `b`, and so on until both are exhausted.
 
 ## Stopping after Exhaustion
 
@@ -50,3 +50,26 @@ assert_eq!(iter.next(), None);     // remaining items from `b` are not returned
 ```
 
 The iteration stops after the fourth element because returning the fifth element from `b` would break the alternating pattern.
+
+## Alternating Even After Exhaustion
+
+If [`alternating_with_all`](AlternatingExt::alternate_with_all) behavior is not desirable and you want to continue alternation even after an iterator is exhausted, use [`alternating_with`](AlternatingExt::alternate_with), the simplest iterator of the three.
+
+```rust
+use alternating_iter::AlternatingExt;
+
+let a = [1, 2];
+let b = [3, 4, 5];
+
+let mut iter = a.iter().alternate_with(b.iter());
+
+assert_eq!(iter.next(), Some(&1)); // `a` first
+assert_eq!(iter.next(), Some(&3)); // `b`
+assert_eq!(iter.next(), Some(&2)); // `a`
+assert_eq!(iter.next(), Some(&4)); // `b`
+assert_eq!(iter.next(), None); // `a` exhausted
+assert_eq!(iter.next(), Some(&5)); // `b`
+assert_eq!(iter.next(), None); // `b` exhausted
+```
+
+The iterator will simply keep alternating blindly, so `Some` can appear between `None` if one of the input iterator is larger than the other.
