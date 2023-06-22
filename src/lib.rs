@@ -101,6 +101,16 @@ pub trait AlternatingExt: Iterator {
     ///        |/|/|
     ///   big: 1 2 None
     /// ```
+    ///
+    /// # Fused
+    /// While the resulting iterator will be Fused if either of the input iterators is Fused,
+    /// it implements [`FusedIterator`](std::iter::FusedIterator)
+    /// only if BOTH iterators are Fused due to Rust's limitation.
+    ///
+    /// If you need the iterator to be Fused,
+    /// call [`AlternatingNoRemainder::fused_left()`](alternating_no_remainder::AlternatingNoRemainder::fused_left)
+    /// or [`AlternatingNoRemainder::fused_right()`](alternating_no_remainder::AlternatingNoRemainder::fused_right)
+    /// instead.
     fn alternate_with_no_remainder<I>(self, other: I) -> AlternatingNoRemainder<Self, I::IntoIter>
     where
         Self: Sized,

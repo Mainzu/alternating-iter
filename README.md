@@ -30,7 +30,7 @@ assert_eq!(alternating.next(), None);
 
 By default the `alternate_with` method creates an iterator that returns an element from `a` first, followed by element from `b`, and so on until both are exhausted.
 
-### Stopping after Exhaustion
+## Stopping after Exhaustion
 
 If, however, you want the iteration to stop once either of the iterators is exhausted, you can use the [`alternate_with_no_remainder`](AlternatingExt::alternate_with_no_remainder) method, also provided by the `AlternatingExt` trait. This method returns an iterator that stops as soon as it needs to return more than one item consecutively from a single iterator.
 

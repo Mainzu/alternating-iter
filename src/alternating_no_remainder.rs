@@ -94,13 +94,6 @@ where
     }
 }
 
-impl<I, J> iter::FusedIterator for AlternatingNoRemainder<I, J>
-where
-    I: Iterator,
-    J: Iterator<Item = I::Item>,
-{
-}
-
 impl<I, J> iter::ExactSizeIterator for AlternatingNoRemainder<I, J>
 where
     I: iter::ExactSizeIterator,
@@ -110,10 +103,131 @@ where
         saturating(min_and_1(self.i.len(), self.j.len(), self.last_i))
     }
 }
+impl<I, J> AlternatingNoRemainder<I, J>
+where
+    I: iter::FusedIterator,
+    J: Iterator<Item = I::Item>,
+{
+    /// Turn the iterator into a fused iterator.
+    ///
+    /// Due to the limitation of Rust trait system [`FusedIterator`](std::iter::FusedIterator)
+    /// cannot be implemented automatically in all valid cases.
+    ///
+    /// If [`fused_right`](AlternatingNoRemainder::fused_right) is also available,
+    /// then neither method is neccessary.
+    pub fn fused_left(self) -> FusedLeft<I, J> {
+        FusedLeft(self)
+    }
+}
+impl<I, J> AlternatingNoRemainder<I, J>
+where
+    I: Iterator,
+    J: iter::FusedIterator<Item = I::Item>,
+{
+    /// Turn the iterator into a fused iterator.
+    ///
+    /// Due to the limitation of Rust trait system [`FusedIterator`](std::iter::FusedIterator)
+    /// cannot be implemented automatically in all valid cases.
+    ///
+    /// If [`fused_left`](AlternatingNoRemainder::fused_left) is also available,
+    /// then neither method is neccessary.
+    pub fn fused_right(self) -> FusedRight<I, J> {
+        FusedRight(self)
+    }
+}
+
+impl<I, J> iter::FusedIterator for AlternatingNoRemainder<I, J>
+where
+    I: iter::FusedIterator,
+    J: iter::FusedIterator<Item = I::Item>,
+{
+}
+
+pub struct FusedLeft<I, J>(pub AlternatingNoRemainder<I, J>)
+where
+    I: iter::FusedIterator,
+    J: Iterator<Item = I::Item>;
+pub struct FusedRight<I, J>(pub AlternatingNoRemainder<I, J>)
+where
+    I: Iterator,
+    J: iter::FusedIterator<Item = I::Item>;
+
+impl<I, J> Iterator for FusedLeft<I, J>
+where
+    I: iter::FusedIterator,
+    J: Iterator<Item = I::Item>,
+{
+    type Item = I::Item;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
+}
+impl<I, J> Iterator for FusedRight<I, J>
+where
+    I: Iterator,
+    J: iter::FusedIterator<Item = I::Item>,
+{
+    type Item = I::Item;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
+}
+impl<I, J> iter::ExactSizeIterator for FusedLeft<I, J>
+where
+    I: iter::FusedIterator + iter::ExactSizeIterator,
+    J: Iterator<Item = I::Item> + iter::ExactSizeIterator,
+{
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+impl<I, J> iter::ExactSizeIterator for FusedRight<I, J>
+where
+    I: Iterator + iter::ExactSizeIterator,
+    J: iter::FusedIterator<Item = I::Item> + iter::ExactSizeIterator,
+{
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+impl<I, J> iter::FusedIterator for FusedLeft<I, J>
+where
+    I: iter::FusedIterator,
+    J: Iterator<Item = I::Item>,
+{
+}
+impl<I, J> iter::FusedIterator for FusedRight<I, J>
+where
+    I: Iterator,
+    J: iter::FusedIterator<Item = I::Item>,
+{
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn is_fused() {
+        let a = 1..3;
+        let b = iter::repeat(0);
+
+        let mut iter = a.alternate_with_no_remainder(b);
+
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+    }
 
     #[test]
     fn same_lengths() {
