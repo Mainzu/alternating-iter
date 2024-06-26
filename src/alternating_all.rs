@@ -83,15 +83,19 @@ where
     }
 }
 
-impl<I, J> iter::ExactSizeIterator for AlternatingAll<I, J>
-where
-    I: iter::ExactSizeIterator,
-    J: iter::ExactSizeIterator<Item = I::Item>,
-{
-    fn len(&self) -> usize {
-        self.i.len() + self.j.len()
-    }
-}
+// Deprecated: According to the documentation for ExactSizeIterator,
+// "If an adapter makes an iterator longer, then it’s usually incorrect for
+// that adapter to implement ExactSizeIterator."
+
+// impl<I, J> iter::ExactSizeIterator for AlternatingAll<I, J>
+// where
+//     I: iter::ExactSizeIterator,
+//     J: iter::ExactSizeIterator<Item = I::Item>,
+// {
+//     fn len(&self) -> usize {
+//         self.i.len() + self.j.len()
+//     }
+// }
 impl<I, J> iter::FusedIterator for AlternatingAll<I, J>
 where
     I: iter::FusedIterator,

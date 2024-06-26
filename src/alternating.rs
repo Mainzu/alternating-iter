@@ -75,15 +75,19 @@ where
     }
 }
 
-impl<I, J> iter::ExactSizeIterator for Alternating<I, J>
-where
-    I: iter::ExactSizeIterator,
-    J: iter::ExactSizeIterator<Item = I::Item>,
-{
-    fn len(&self) -> usize {
-        saturating(min_and_1(self.i.len(), self.j.len(), !self.i_next))
-    }
-}
+// Deprecated: According to the documentation for ExactSizeIterator,
+// "If an adapter makes an iterator longer, then it’s usually incorrect for
+// that adapter to implement ExactSizeIterator."
+
+// impl<I, J> iter::ExactSizeIterator for Alternating<I, J>
+// where
+//     I: iter::ExactSizeIterator,
+//     J: iter::ExactSizeIterator<Item = I::Item>,
+// {
+//     fn len(&self) -> usize {
+//         saturating(min_and_1(self.i.len(), self.j.len(), !self.i_next))
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
