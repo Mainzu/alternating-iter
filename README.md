@@ -53,7 +53,7 @@ The iteration stops after the fourth element because returning the fifth element
 
 ## Alternating Even After Exhaustion
 
-If [`alternating_with_all`](AlternatingExt::alternate_with_all) behavior is not desirable and you want to continue alternation even after an iterator is exhausted, use [`alternating_with`](AlternatingExt::alternate_with), the simplest iterator of the three.
+If [`alternate_with_all`](AlternatingExt::alternate_with_all) behavior is not desirable and you want to continue alternation even after an iterator is exhausted, use [`alternate_with`](AlternatingExt::alternate_with), the simplest iterator of the three.
 
 ```rust
 use alternating_iter::AlternatingExt;
@@ -73,3 +73,8 @@ assert_eq!(iter.next(), None);     // `b` exhausted
 ```
 
 The iterator will simply keep alternating blindly, so `Some` can appear between `None` if one of the input iterator is larger than the other.
+
+# Changelog
+
+- 2.0: Renamed methods on the extension tarit and fixed erroneous `FusedIterator` implementation
+- 3.0: Removed erroneous `FixedSizedIterator` implementations

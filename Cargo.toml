@@ -1,6 +1,6 @@
 [package]
 name = "alternating-iter"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT-0"
 description = "Provide an iterator adaptor which alternate between two iterators."
