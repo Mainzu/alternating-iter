@@ -1,6 +1,6 @@
 # Alternating Iterators
 
-![Latest Version](https://img.shields.io/crates/v/alternating-iter)
+[![Latest Version](https://img.shields.io/crates/v/alternating-iter)](https://crates.io/crates/alternating-iter)
 
 This crate aims to provides a convenient way to alternate between the items of two iterators. It allows you to iterate over two iterators in an alternating fashion, combining their elements into a single sequence.
 
