@@ -2,7 +2,7 @@
 
 [![Latest Version](https://img.shields.io/crates/v/alternating-iter)](https://crates.io/crates/alternating-iter)
 
-This crate aims to provides a convenient way to alternate between the items of two iterators. It allows you to iterate over two iterators in an alternating fashion, combining their elements into a single sequence.
+This crate aims to provide a convenient way to alternate between the items of two iterators. It allows you to iterate over two iterators in an alternating fashion, combining their elements into a single sequence.
 
 For the easiest usage of this crate, bring the [`AlternatingExt`](crate::AlternatingExt) trait into scope
 
@@ -28,7 +28,7 @@ assert_eq!(iter.next(), Some(&5)); // also `b`
 assert_eq!(iter.next(), None);
 ```
 
-By default the `alternate_with_all` method creates an iterator that returns an element from `a` first, followed by element from `b`, and so on until both are exhausted.
+By default, the `alternate_with_all` method creates an iterator that returns an element from `a` first, followed by an element from `b`, and so on until both are exhausted.
 
 ## Stopping after Exhaustion
 
@@ -53,7 +53,7 @@ The iteration stops after the fourth element because returning the fifth element
 
 ## Alternating Even After Exhaustion
 
-If [`alternate_with_all`](AlternatingExt::alternate_with_all) behavior is not desirable and you want to continue alternation even after an iterator is exhausted, use [`alternate_with`](AlternatingExt::alternate_with), the simplest iterator of the three.
+If the [`alternate_with_all`](AlternatingExt::alternate_with_all) behavior is not desirable and you want to continue alternation even after an iterator is exhausted, use [`alternate_with`](AlternatingExt::alternate_with), the simplest iterator of the three.
 
 ```rust
 use alternating_iter::AlternatingExt;
@@ -72,9 +72,9 @@ assert_eq!(iter.next(), Some(&5)); // `b`
 assert_eq!(iter.next(), None);     // `b` exhausted
 ```
 
-The iterator will simply keep alternating blindly, so `Some` can appear between `None` if one of the input iterator is larger than the other.
+The iterator will simply keep alternating blindly, so `Some` can appear between `None` if one of the input iterators is larger than the other.
 
 # Changelog
 
-- 2.0: Renamed methods on the extension tarit and fixed erroneous `FusedIterator` implementation
-- 3.0: Removed erroneous `FixedSizedIterator` implementations
+- 0.2: Renamed methods on the extension trait and fixed erroneous `FusedIterator` implementation
+- 0.3: Removed erroneous `FixedSizedIterator` implementations

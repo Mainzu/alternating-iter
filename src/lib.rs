@@ -4,6 +4,7 @@
 #![deny(rustdoc::invalid_rust_codeblocks)]
 #![deny(rustdoc::missing_crate_level_docs)]
 #![warn(rustdoc::invalid_codeblock_attributes)]
+
 mod alternating;
 mod alternating_all;
 mod alternating_no_remainder;
@@ -18,10 +19,10 @@ pub use alternating_no_remainder::AlternatingNoRemainder;
 /// This trait can be `use`d to add the `alternate_with*` family of methods
 /// to any iterator, allowing iteration over two iterators in an alternating fashion.
 pub trait AlternatingExt: Iterator {
-    /// Takes two iterators and creates a new iterator over both in in an alternating fashion.
+    /// Takes two iterators and creates a new iterator over both in an alternating fashion.
     ///
     /// The left iterator will be the first in the sequence.
-    /// Keep alternating even if one of the iterators is exhausted.
+    /// Alternation continues even if one of the iterators is exhausted.
     ///
     /// Note that both iterators must have the same [`Item`](Iterator::Item) type.
     ///
@@ -50,8 +51,9 @@ pub trait AlternatingExt: Iterator {
     {
         Alternating::new(self, other)
     }
-    /// Takes two iterators and creates a new iterator over both in in an alternating fashion,
-    /// while taking care of the size difference.
+
+    /// Takes two iterators and creates a new iterator over both in an alternating fashion,
+    /// while handling size differences.
     ///
     /// The left iterator will be the first in the sequence.
     /// Once one of the iterators is exhausted,
@@ -110,7 +112,7 @@ pub trait AlternatingExt: Iterator {
     /// assert_eq!(iter.next(), None);     // remaining items from `b` are not returned
     /// ```
     ///
-    /// Importantly, the order of the iterators matter to the overall length:
+    /// Importantly, the order of the iterators matters to the overall length:
     /// ```
     /// # use std::iter;
     /// # use alternating_iter::AlternatingExt;
@@ -122,15 +124,15 @@ pub trait AlternatingExt: Iterator {
     /// assert_eq!(big.iter().alternate_with_no_remainder(small.iter()).count(), 5);
     /// ```
     ///
-    /// This behavior can be depicted as follow:
+    /// This behavior can be depicted as follows:
     ///
-    /// Here is when `small` is on the left,
+    /// Here is when `small` is on the left:
     /// ```txt
     /// small: 1 2 None
     ///        |/|/
     ///   big: 3 4
     /// ```
-    /// And here is when `big` is on the left:`
+    /// And here is when `big` is on the left:
     /// ```txt
     /// small: 3 4 5
     ///        |/|/|
